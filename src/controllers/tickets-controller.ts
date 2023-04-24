@@ -1,35 +1,37 @@
 import { NextFunction, Response } from 'express';
 import httpStatus from 'http-status';
 import { AuthenticatedRequest } from '@/middlewares';
-import { UserTicket } from '@/protocols';
 import ticketService from '@/services/tickets-service';
+import { InputTicketBody } from '@/protocols';
 
-export async function getAllTicketsType(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getTicketTypes(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<Response> {
   try {
-    const tickets = await ticketService.getAllTicketsTypes();
-    res.send(tickets);
-  } catch (error) {
-    next(error);
+    const ticketTypes = await ticketService.getTicketType();
+    return res.status(httpStatus.OK).send(ticketTypes);
+  } catch (e) {
+    next(e);
   }
 }
 
-export async function getUserTickets(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  const id: number = req.userId;
+export async function getTickets(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<Response> {
+  const { userId } = req;
+
   try {
-    const ticket: UserTicket = await ticketService.getTicket(id);
+    const ticket = await ticketService.getTicketByUserId(userId);
     return res.status(httpStatus.OK).send(ticket);
-  } catch (error) {
-    next(error);
+  } catch (e) {
+    next(e);
   }
 }
 
-export async function createTicket(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  const ticketTypeId: number = req.body.ticketTypeId;
-  const id: number = req.userId;
+export async function createTicket(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<Response> {
+  const { userId } = req;
+  const { ticketTypeId } = req.body as InputTicketBody;
+
   try {
-    const ticket: UserTicket = await ticketService.createTicket(ticketTypeId, id);
+    const ticket = await ticketService.createTicket(userId, ticketTypeId);
     return res.status(httpStatus.CREATED).send(ticket);
-  } catch (error) {
-    next(error);
+  } catch (e) {
+    next(e);
   }
 }
